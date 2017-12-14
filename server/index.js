@@ -10,16 +10,36 @@ app.use(bodyParser.json());
 
 
 // load initial/refresh feed
-app.get(('/users/:user_id/initial_feed'), (req, res) => {
+app.get('/users/:user_id/initial_feed', (req, res) => {
   const userId = req.params.user_id;
-  console.log('userId--->', userId);
 
   Promise.all([
     axios.get(`{get elenas ip address}/users/${userId}/post_feed/0`),
     axios.get(`{get chadams ip address}/users/${userId}/ad_feed/0`),
   ])
     .then((response) => {
-      // stitch together feed
+      const { feed } = response[0];
+      const { ad } = response[1];
+      const nextPostIndex = response[0].next_post_index;
+      const nextAdIndex = response[1].next_ad_index;
+
+      // attach ad to feed
+      feed.push(ad);
+
+      // store indices in db
+      knex('feed_indices')
+        .where('user_id', '=', userId)
+        .update({
+          next_post_index: nextPostIndex,
+          next_ad_index: nextAdIndex,
+        })
+        .then((results) => {
+          console.log('update successful -->', results);
+          res.send(feed);
+        })
+        .catch((error) => {
+          console.log('insert error -->', error);
+        });
     })
     .catch((error) => {
       console.log('initial load error -->', error);
@@ -28,8 +48,7 @@ app.get(('/users/:user_id/initial_feed'), (req, res) => {
 
 
 // load more feed
-app.get(('/users/:user_id/more_feed'), (req, res) => {
-  console.log(req.params);
+app.get('/users/:user_id/more_feed', (req, res) => {
   const userId = req.params.user_id;
   let nextPostIndex;
   let nextAdIndex;
@@ -37,7 +56,6 @@ app.get(('/users/:user_id/more_feed'), (req, res) => {
   // go to db to get next post index
   knex('feed_indices').where('user_id', userId)
     .then((results) => {
-      console.log('select results -->', results);
       nextPostIndex = results[0].next_post_index;
       nextAdIndex = results[0].next_ad_index;
     })
@@ -50,7 +68,28 @@ app.get(('/users/:user_id/more_feed'), (req, res) => {
     axios.get(`{get chadams ip address}/users/${userId}/ad_feed/${nextAdIndex}`),
   ])
     .then((response) => {
-      // stitch together feed
+      const { feed } = response[0];
+      const { ad } = response[1];
+      nextPostIndex = response[0].next_post_index;
+      nextAdIndex = response[1].next_ad_index;
+
+      // attach ad to feed
+      feed.push(ad);
+
+      // store indices in db
+      knex('feed_indices')
+        .where('user_id', '=', userId)
+        .update({
+          next_post_index: nextPostIndex,
+          next_ad_index: nextAdIndex,
+        })
+        .then((results) => {
+          console.log('update successful -->', results);
+          res.send(feed);
+        })
+        .catch((error) => {
+          console.log('insert error -->', error);
+        });
     })
     .catch((error) => {
       console.log('load more error -->', error);
