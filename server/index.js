@@ -2,11 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const knex = require('../database/db');
 const axios = require('axios');
+const documents = require('./routes/documents');
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use('/documents', documents);
 
 
 // load initial/refresh feed
