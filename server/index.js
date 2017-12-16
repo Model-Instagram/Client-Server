@@ -98,4 +98,92 @@ app.get('/users/:user_id/more_feed', (req, res) => {
     });
 });
 
+
+// ad is liked
+app.get('/feed/likes/ads/:ad_id/users/:user_id', (req, res) => {
+  const userId = req.params.user_id;
+  const adId = req.params.ad_id;
+
+  axios.get(`/likes/ads/${adId}/users/${userId}`)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('ad like error -->', error);
+    });
+});
+
+
+// ad is viewed
+app.get('feed/views/ads/:ad_id/users/:user_id', (req, res) => {
+  const userId = req.params.user_id;
+  const adId = req.params.ad_id;
+
+  axios.get(`/views/ads/${adId}/users/${userId}`)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('ad view error -->', error);
+    });
+});
+
+
+// ad is clicked
+app.get('feed/clicks/ads/:ad_id/users/:user_id', (req, res) => {
+  const userId = req.params.user_id;
+  const adId = req.params.ad_id;
+
+  axios.get(`feed/clicks/ads/${adId}/users/${userId}`)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('ad click error -->', error);
+    });
+});
+
+
+app.post('/feed/posts/', (req, res) => {
+  const userId = req.body.user_id;
+  const profileImgUrl = req.body.profile_img_url;
+  const imgUrl = req.body.img_url;
+  const likeCount = req.body.like_count;
+  const { username } = req.body;
+  const { caption } = req.body;
+  const { location } = req.body;
+
+  axios.post('/posts/', {
+    user_id: userId,
+    profile_img_url: profileImgUrl,
+    img_url: imgUrl,
+    like_count: likeCount,
+    username,
+    caption,
+    location,
+  })
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('post error -->', error);
+    });
+});
+
+
+// post is liked
+app.get('feed/likes/posts/:post_id/users/:user_id', (req, res) => {
+  const userId = req.params.user_id;
+  const postId = req.params.post_id;
+
+  axios.get(`/likes/posts/${postId}/users/${userId}`)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('post like error -->', error);
+    });
+});
+
+
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
