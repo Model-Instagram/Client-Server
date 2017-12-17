@@ -1,7 +1,12 @@
+const apm = require('elastic-apm-node').start({
+  appName: 'model-instagram',
+});
+
 const express = require('express');
+const responseTime = require('response-time');
+const axios = require('axios');
 const bodyParser = require('body-parser');
 const knex = require('../database/db');
-const axios = require('axios');
 const documents = require('./routes/documents');
 
 const app = express();
@@ -9,6 +14,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/documents', documents);
+app.use(responseTime());
 
 
 // load initial/refresh feed
@@ -60,41 +66,41 @@ app.get('/users/:user_id/more_feed', (req, res) => {
     .then((results) => {
       nextPostIndex = results[0].next_post_index;
       nextAdIndex = results[0].next_ad_index;
-    })
-    .catch((error) => {
-      console.log('select error -->', error);
-    });
 
-  Promise.all([
-    axios.get(`{get elenas ip address}/users/${userId}/post_feed/${nextPostIndex}`),
-    axios.get(`{get chadams ip address}/users/${userId}/ad_feed/${nextAdIndex}`),
-  ])
-    .then((response) => {
-      const { feed } = response[0];
-      const { ad } = response[1];
-      nextPostIndex = response[0].next_post_index;
-      nextAdIndex = response[1].next_ad_index;
+      Promise.all([
+        axios.get(`{get elenas ip address}/users/${userId}/post_feed/${nextPostIndex}`),
+        axios.get(`{get chadams ip address}/users/${userId}/ad_feed/${nextAdIndex}`),
+      ])
+        .then((response) => {
+          const { feed } = response[0];
+          const { ad } = response[1];
+          nextPostIndex = response[0].next_post_index;
+          nextAdIndex = response[1].next_ad_index;
 
-      // attach ad to feed
-      feed.push(ad);
+          // attach ad to feed
+          feed.push(ad);
 
-      // store indices in db
-      knex('feed_indices')
-        .where('user_id', '=', userId)
-        .update({
-          next_post_index: nextPostIndex,
-          next_ad_index: nextAdIndex,
-        })
-        .then((results) => {
-          console.log('update successful -->', results);
-          res.send(feed);
+          // store indices in db
+          knex('feed_indices')
+            .where('user_id', '=', userId)
+            .update({
+              next_post_index: nextPostIndex,
+              next_ad_index: nextAdIndex,
+            })
+            .then((dbResults) => {
+              console.log('update successful -->', dbResults);
+              res.send(feed);
+            })
+            .catch((error) => {
+              console.log('insert error -->', error);
+            });
         })
         .catch((error) => {
-          console.log('insert error -->', error);
+          console.log('load more error -->', error);
         });
     })
     .catch((error) => {
-      console.log('load more error -->', error);
+      console.log('select error -->', error);
     });
 });
 
@@ -185,5 +191,26 @@ app.get('feed/likes/posts/:post_id/users/:user_id', (req, res) => {
     });
 });
 
+
+app.get('/test', (req, res) => {
+  const userId = 1;
+  const nextPostIndex = 9;
+  const nextAdIndex = 9;
+  console.log('here');
+
+  knex('feed_indices')
+    .where('user_id', '=', userId)
+    .update({
+      next_post_index: nextPostIndex,
+      next_ad_index: nextAdIndex,
+    })
+    .then((results) => {
+      console.log('update successful -->', results);
+      res.sendStatus(200);
+    })
+    .catch((error) => {
+      console.log('insert error -->', error);
+    });
+});
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));
