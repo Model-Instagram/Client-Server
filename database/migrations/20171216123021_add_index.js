@@ -1,4 +1,3 @@
-
 exports.up = (knex, Promise) => {
   return knex.schema.table('feed_indices', (t) => {
     t.index(['user_id']);
