@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "stable"
+services:
+  - "postgresql"
+addons:
+  postgresql: "10.1"
+before_script:
+  - psql -c 'create database insta_dev_test;' -U postgres
