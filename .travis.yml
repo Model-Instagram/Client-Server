@@ -4,6 +4,6 @@ node_js:
 services:
   - "postgresql"
 addons:
-  postgresql: "10.1"
+  postgresql: "9.6"
 before_script:
   - psql -c 'create database insta_dev_test;' -U brandonhadler
