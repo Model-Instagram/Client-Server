@@ -6,4 +6,4 @@ services:
 addons:
   postgresql: "9.6"
 before_script:
-  - psql -c 'create database insta_dev_test;' -U brandonhadler
+  - psql -c 'create database insta_dev_test;' -U postgresql
