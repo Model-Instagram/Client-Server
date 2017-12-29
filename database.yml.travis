@@ -1,3 +1,0 @@
-test:
-  adapter: postgresql
-  database: insta_dev_test
