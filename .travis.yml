@@ -9,5 +9,10 @@ addons:
   postgresql: "9.6"
 before_script:
   - psql -c 'create database insta_dev_test;' -U postgres
+  - knex migrate:latest interactions & sleep 2
+  - knex migrate:rollback interactions
+  - knex migrate:latest interactions
+  - node database/seed-testdb.js & sleep 3
+  - node server/index.js & sleep 5
 script:
   - npm test
