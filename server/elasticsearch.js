@@ -1,5 +1,4 @@
 if (process.env.NODE_ENV !== 'test') {
-
   const elasticsearch = require('elasticsearch');
 
   const elasticClient = new elasticsearch.Client({
