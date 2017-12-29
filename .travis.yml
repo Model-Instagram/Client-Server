@@ -8,6 +8,6 @@ services:
 addons:
   postgresql: "9.6"
 before_script:
-  - psql -c 'create database insta_dev_test;' -U postgres
+  - psql -c 'create database insta_dev_test_test;' -U postgres
 script:
   - npm test
