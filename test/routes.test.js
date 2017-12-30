@@ -3,13 +3,22 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../server/index');
+const { knex } = require('../database/knex');
 
 const should = chai.should();
 
 chai.use(chaiHttp);
 
 describe('API Routes', () => {
-
+  before(function (done) {
+    Promise.resolve(knex.migrate.latest({ directory: 'database/migrations' })
+      .then(function () {
+        return knex.seed.run();
+        })
+      .then(function () {
+        done();
+      }));
+  });
   describe('Server is running', () => {
     it( 'should return a response', (done) => {
       chai.request(server)
